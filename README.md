@@ -4,7 +4,8 @@ An exploratory and inferential data analysis on global video game historical sal
 ## 📌 Key Insights & Findings
 -Regional Market Alignment: Pearson correlation tests reveal a strong linear relationship between North American (NA) and European (EU) sales ($r = 0.77, p < 2.2 \times 10^{-16}$), whereas Japanese (JP) market preferences align significantly less with NA ($r = 0.45, p < 2.2 \times 10^{-16}$).   
 
--Genre Hit Rates (Bayesian Model): Formulated a Bayesian probability model to calculate posterior probabilities for games reaching "blockbuster" status (>1M units sold).   $P(\text{Hit} \mid \text{Action}) \approx 19.3\%$   
+-Genre Hit Rates (Bayesian Model): Formulated a Bayesian probability model to calculate posterior probabilities for games reaching "blockbuster" status (>1M units sold).   
+$P(\text{Hit} \mid \text{Action}) \approx 19.3\%$   
 $P(\text{Hit} \mid \text{Strategy}) \approx 6.5\%$   
 
 -Conclusion: Action games have roughly 2.98x higher likelihood of hitting 1M+ sales compared to Strategy games.   
