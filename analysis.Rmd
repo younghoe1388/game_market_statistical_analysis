@@ -1,0 +1,387 @@
+---
+title: "Project"
+output:
+  word_document: default
+  html_document: default
+date: "2025-04-04"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r cars}
+library(dplyr)
+datas <- read.csv("C:\\COMP2501\\vgsales.csv")
+head(datas)
+
+```
+
+```{r}
+# 分析平台的热门趋势
+platform_trends <-datas |> select(Platform, Year) |>
+  group_by(Year) |>
+  count(Platform)
+head(platform_trends)
+
+platform_trends_filtered <- platform_trends |>
+  group_by(Year) |>
+  top_n(5, n) 
+platform_trends_filtered$Platform <- reorder(platform_trends_filtered$Platform,
+                                             -platform_trends_filtered$n,
+                                             FUN = mean)
+tail(platform_trends_filtered)
+
+library(ggplot2)
+library(ggthemes)
+library(ggrepel)
+ggplot(platform_trends_filtered, aes(x = Year, y = n, fill = Platform)) +
+  geom_bar(stat = "identity") +
+  geom_text_repel(aes(label = Platform), vjust = -0.5, angle = 30,
+                  max.overlaps = 20) +
+  labs(title = "Popularity trends of game platforms",
+       x = "Year",
+       y = "Number of games released on the platform")
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+```{r}
+# 分析各个年份最热门的游戏平台
+most_popular_platform_trend <- platform_trends |>
+  group_by(Year) |>
+  top_n(1, n)
+
+ggplot(most_popular_platform_trend, aes(x = Year, y = n, fill = Platform)) +
+  geom_col() +
+  geom_text_repel(aes(label = Platform), vjust = -0.5, angle = 30,
+                  max.overlaps = 5) +
+  labs(title = "The most popular gaming platform every year",
+       x = "Year",
+       y = "Number of games released on the platform")
+```
+
+```{r}
+# 游戏平台市占率（市占率最高的几个）
+
+# 所有平台的游戏销售量
+total_sales_allplatform <- sum(datas$Global_Sales, na.rm = TRUE) 
+
+region_platform_data <- datas |>
+  group_by(Platform) |>
+  summarise(platform_sale = sum(Global_Sales, na.rm = TRUE)) |>
+  # 各个平台的市占率
+  mutate(global_percentage = platform_sale / total_sales_allplatform * 100) 
+head(region_platform_data) 
+
+# 市占率最高的几个平台
+region_platform_filtered <- region_platform_data |>
+  top_n(5, global_percentage)
+head(region_platform_data)
+
+library(RColorBrewer)
+myPalette <- brewer.pal(5, "Set2")
+plot1 <- pie(region_platform_filtered$platform_sale, 
+    labels = c("DS: 9.28%", "PS2: 13.98%", "PS3: 10.76%", "Wii: 10.31%", 
+               "X360: 10.99%"), 
+    radius = 1,
+    border="white", col=myPalette)
+
+```
+
+```{r}
+# 研究各个地区的游戏平台市占率
+# 日本
+total_sales_jp = sum(datas$JP_Sales, na.rm = TRUE)
+jp_platform <- datas |>
+  group_by(Platform) |>
+  summarise(Japan_platform = sum(JP_Sales, na.rm = TRUE)) |>
+  # 计算各平台在日本地区的销售占比
+  mutate(japan_percentage = Japan_platform / total_sales_jp * 100)
+head(jp_platform)
+
+jp_platform_filtered <- jp_platform |>
+  top_n(5, japan_percentage) |>
+  arrange(desc(japan_percentage))
+head(jp_platform_filtered)
+
+myPalette <- brewer.pal(5, "Set2")
+plot2 <- pie(jp_platform_filtered$japan_percentage, 
+    labels = c("DS: 13.63%", "PS: 10.88%", "PS2: 10.71%", "SNES: 9.08%", 
+               "NES: 7.68%"), 
+    radius = 1,
+    border="white", col=myPalette)
+
+```
+
+```{r}
+# 北美
+total_sales_NA = sum(datas$NA_Sales, na.rm = TRUE)
+na_platform <- datas |>
+  group_by(Platform) |>
+  summarise(NA_platform = sum(NA_Sales, na.rm = TRUE)) |>
+  # 计算各平台在日本地区的销售占比
+  mutate(north_america_percentage = NA_platform / total_sales_NA * 100)
+head(na_platform)
+
+na_platform_filtered <- na_platform |>
+  top_n(5, north_america_percentage) |>
+  arrange(desc(north_america_percentage))
+head(na_platform_filtered)
+
+myPalette <- brewer.pal(5, "Set2")
+plot3 <- pie(na_platform_filtered$north_america_percentage, 
+    labels = c("X360: 13.72%", "PS2: 13.22%", "Wii: 11.48%", "PS3: 8.97%", 
+               "DS: 8.97%"), 
+    radius = 1,
+    border="white", col=myPalette)
+```
+
+```{r}
+# 欧盟
+total_sales_EU = sum(datas$EU_Sales, na.rm = TRUE)
+EU_platform <- datas |>
+  group_by(Platform) |>
+  summarise(EU_platform = sum(EU_Sales, na.rm = TRUE)) |>
+  # 计算各平台在日本地区的销售占比
+  mutate(eu_percentage = EU_platform / total_sales_EU * 100)
+head(EU_platform)
+
+EU_platform_filtered <- EU_platform |>
+  top_n(5, eu_percentage) |>
+  arrange(desc(eu_percentage))
+head(EU_platform_filtered)
+
+myPalette <- brewer.pal(5, "Set2")
+plot4 <- pie(EU_platform_filtered$eu_percentage, 
+    labels = c("PS3: 14.13%", "PS2: 13.81%", "X360: 11.54%", "Wii: 10.97%", 
+               "PS: 8.82%"), 
+    radius = 1,
+    border="white", col=myPalette)
+```
+```{r}
+# 将四个饼状图合为一张图
+# 设置图形布局为2行2列
+par(mfrow = c(2, 2))
+
+plot1 <- pie(region_platform_filtered$platform_sale, 
+    labels = c("DS: 9.28%", "PS2: 13.98%", "PS3: 10.76%", "Wii: 10.31%", 
+               "X360: 10.99%"), 
+    radius = 1,
+    border="white", col=myPalette,
+    main = "popular platform in global")
+
+plot2 <- pie(jp_platform_filtered$percentage, 
+    labels = c("DS: 13.63%", "PS: 10.88%", "PS2: 10.71%", "SNES: 9.08%", 
+               "NES: 7.68%"), 
+    radius = 1,
+    border="white", col=myPalette,
+    main = "popular platform in Japan")
+
+plot3 <- pie(na_platform_filtered$percentage, 
+    labels = c("X360: 13.72%", "PS2: 13.22%", "Wii: 11.48%", "PS3: 8.97%", 
+               "DS: 8.97%"), 
+    radius = 1,
+    border="white", col=myPalette,
+    main = "popular platform in North America")
+
+plot4 <- pie(EU_platform_filtered$percentage, 
+    labels = c("PS3: 14.13%", "PS2: 13.81%", "X360: 11.54%", "Wii: 10.97%", 
+               "PS: 8.82%"), 
+    radius = 1,
+    border="white", col=myPalette,
+    main = "popular platform in Europe")
+```
+
+
+```{r}
+library(dplyr)
+all_platform <- region_platform_filtered |>
+  full_join(jp_platform_filtered)
+all_platform <- all_platform |>
+  full_join(na_platform_filtered)
+all_platform <- all_platform |>
+  full_join(EU_platform_filtered)
+all_platform <- all_platform |>
+  select(Platform, global_percentage, japan_percentage, north_america_percentage, eu_percentage)
+print(all_platform)
+```
+
+
+
+```{r}
+# 各地区游戏销量趋势
+library(tidyverse)
+
+# 将数据转为长数据
+region_sales <- datas |>
+  pivot_longer(cols = `NA_Sales`:`Other_Sales`, names_to = "region", 
+               values_to = "sales")
+
+# 将地区销量按年分类
+region_sales <- region_sales |>
+  select(Year, region, sales) |>
+  group_by(Year, region) |>
+  summarise(total_sales_region = sum(sales, na.rm = TRUE), .groups = "keep")
+head(region_sales)
+
+ggplot(region_sales, aes(x = Year, y = total_sales_region, colour = region)) +
+  geom_point() +
+  geom_line()
+  
+```
+
+
+```{r}
+# 最受欢迎的游戏类型趋势
+
+# 分析每年最受欢迎的五个游戏类别（由1995年开始分析，前些年游戏产业不成熟）
+popular_genre <- datas |>
+  select(Year, Genre, Global_Sales) |>
+  group_by(Year, Genre) |>
+  summarise(total_global_sales = sum(Global_Sales, na.rm = TRUE)) |>
+  group_by(Year) |>
+  filter(Year %in% 1995:2030) |>
+  mutate(Genre = reorder(Genre, total_global_sales)) |>
+  top_n(3, total_global_sales) 
+head(popular_genre, 20)
+
+ggplot(popular_genre, aes(x = Year, y = total_global_sales, colour = Genre)) +
+  geom_col() +
+  labs(title = "Trends of popular game genre",
+       x = "Year",
+       y = "Total global sale of video game")
+    
+```
+
+```{r}
+# 游戏类别的累计销售额
+genre_sales <- datas |>
+  group_by(Genre) |>
+  summarise(total_genre_sales = sum(Global_Sales)) |>
+  mutate(Genre = reorder(Genre, -total_genre_sales))
+head(genre_sales)
+
+ggplot(genre_sales, aes(x = Genre, y = total_genre_sales)) +
+  geom_col(fill = "skyblue") +
+  labs(title = "Total sales of each genre",
+       x = "Genre",
+       y = "Total sales of genre in global") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+
+```
+
+```{r}
+# 各个游戏类别的游戏数量
+total_genre <- datas |>
+  filter(!is.na(Genre)) |>
+  group_by(Genre) |>
+  summarise(total = n()) |>
+  mutate(Genre = reorder(Genre, -total))
+head(total_genre)
+
+ggplot(total_genre, aes(x = Genre, y = total)) +
+  geom_col(fill = "skyblue") +
+  labs(title = "Total game of each genre",
+       x = "Genre",
+       y = "Total game of genre") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+```
+
+```{r}
+# 排名前500的游戏中，各个发行商发行游戏之市占比
+publishers_sales <- datas |>
+  select(Publisher, Rank) |>
+  filter(Rank %in% 1:500) |>
+  group_by(Publisher) |>
+  summarise(total = n()) 
+
+publishers_sales <- publishers_sales |>
+  mutate(percentage = total / sum(total) * 100) |>
+  arrange(desc(percentage)) |>
+  top_n(10, percentage) |>
+  mutate(Publisher = reorder(Publisher, -percentage))
+head(publishers_sales)
+
+ggplot(publishers_sales, aes(x = Publisher, y = percentage)) +
+  geom_col(fill = "blue") +
+  labs(title = "Percentage of publisher in top 500 games",
+       x = "Game publisher",
+       y = "Percentafe of game publisher") +
+  theme(axis.text.x = element_text(angle = 30, hjust = 1))
+  
+```
+
+```{r}
+# 各个地区发行商游戏销售额
+# 日本
+jp_publisher_sales <- datas |>
+  filter(!is.na(Publisher)) |>
+  group_by(Publisher) |>
+  summarise(total_jp_sale = sum(JP_Sales)) |>
+  arrange(desc(total_jp_sale)) |>
+  mutate(percentage = total_jp_sale / sum(total_jp_sale) * 100)
+head(jp_publisher_sales)
+```
+```{r}
+# 北美
+na_publisher_sales <- datas |>
+  filter(!is.na(Publisher)) |>
+  group_by(Publisher) |>
+  summarise(total_na_sale = sum(NA_Sales)) |>
+  arrange(desc(total_na_sale)) |>
+  mutate(percentage = total_na_sale / sum(total_na_sale) * 100)
+head(na_publisher_sales)
+```
+```{r}
+# 欧盟
+eu_publisher_sales <- datas |>
+  filter(!is.na(Publisher)) |>
+  group_by(Publisher) |>
+  summarise(total_eu_sale = sum(EU_Sales)) |>
+  arrange(desc(total_eu_sale)) |>
+  mutate(percentage = total_eu_sale / sum(total_eu_sale) * 100)
+head(eu_publisher_sales)
+```
+```{r}
+# 北美销量与欧洲销量的相关性
+cor.test(datas$NA_Sales, datas$EU_Sales, method = "pearson")
+```
+
+
+```{r}
+cor.test(datas$NA_Sales, datas$JP_Sales, method = "pearson")
+```
+
+
+```{r}
+# 假设先验概率：成功游戏的比例
+prior_success <- sum(datas$Global_Sales > 1) / nrow(datas)
+
+# 动作类成功概率（销量最高）
+action_games <- datas[datas$Genre == "Action", ]
+action_success_rate <- sum(action_games$Global_Sales > 1) / nrow(action_games)
+
+# 动作类后验概率计算
+posterior_success_action <- (action_success_rate * prior_success) / 
+  ((action_success_rate * prior_success) + ((1 - action_success_rate) * (1 - prior_success)))
+posterior_success_action
+
+# 策略类游戏成功概率（销量最低）
+strategy_games <- datas[datas$Genre == "Strategy", ]
+strategy_sucess_rate <- sum(strategy_games$Global_Sales > 1) / nrow(strategy_games)
+
+posterior_success_strategy <- (strategy_sucess_rate * prior_success) / 
+  ((strategy_sucess_rate * prior_success) + ((1 - strategy_sucess_rate) * (1 - prior_success)))
+posterior_success_strategy
+
+differences <- posterior_success_action / posterior_success_strategy
+differences
+```
+
